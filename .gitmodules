@@ -1,0 +1,18 @@
+[submodule "thirdparty/tree-sitter"]
+	path = thirdparty/tree-sitter
+	url = https://github.com/tree-sitter/tree-sitter.git
+[submodule "thirdparty/tree-sitter-python"]
+	path = thirdparty/tree-sitter-python
+	url = https://github.com/tree-sitter/tree-sitter-python.git
+[submodule "thirdparty/tree-sitter-go"]
+	path = thirdparty/tree-sitter-go
+	url = https://github.com/tree-sitter/tree-sitter-go.git
+[submodule "thirdparty/tree-sitter-javascript"]
+	path = thirdparty/tree-sitter-javascript
+	url = https://github.com/tree-sitter/tree-sitter-javascript.git
+[submodule "thirdparty/tree-sitter-typescript"]
+	path = thirdparty/tree-sitter-typescript
+	url = https://github.com/tree-sitter/tree-sitter-typescript.git
+[submodule "thirdparty/tree-sitter-java"]
+	path = thirdparty/tree-sitter-java
+	url = https://github.com/tree-sitter/tree-sitter-java.git
