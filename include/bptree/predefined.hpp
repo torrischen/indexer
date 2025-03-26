@@ -1,7 +1,7 @@
 #ifndef PREDEFINED_H
 #define PREDEFINED_H
 
-#include <string.h>
+#include <iostream>
 
 namespace bptree {
 
