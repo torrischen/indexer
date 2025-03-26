@@ -19,6 +19,16 @@ make && make install
 cd tree-sitter-go
 make && make install
 
+cd tree-sitter-java
+make && make install
+
+cd tree-sitter-javascript
+make && make install
+
+cd tree-sitter-typescript
+make && make install
+
+# if on ubuntu, better refresh your ld cache
 sudo ldconfig
 ```
 
