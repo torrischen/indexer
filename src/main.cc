@@ -3,17 +3,20 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <algorithm>
+#include <iostream>
 #include <bptree/bptree.hpp>
-using bptree::bplus_tree;
 
 int main(int argc, char *argv[]){
-    bplus_tree tree("test.db", true);
-    int insert_result = tree.insert("2", "111");
-    std::cout << insert_result << std::endl;
-    bptree::value_t value;
-    int search_result = tree.search("2", &value);
-    printf("result: %d\n", search_result);
-    std::cout << value.v << std::endl;
+    BPlusTree tree("test.db");
+    tree.Put("1", "1");
+    tree.Put("2", "44");
+    tree.Put("3", "3");
+    tree.Dump();
+
+    // tree.Delete("2");
+    std::string value;
+    tree.Get("2", value);
+    std::cout << value << std::endl;
 }
 
 
