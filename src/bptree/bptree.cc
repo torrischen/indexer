@@ -1,14 +1,18 @@
 #include "bptree/bptree.hpp"
 
+#include <cassert>
+#include <cstring>
+#include <unordered_map>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#include <cassert>
-#include <cstring>
-#include <unordered_map>
+#endif
 
 const off_t kMetaOffset = 0;
 const int kOrder = 32;
@@ -21,9 +25,13 @@ typedef char Key[kMaxKeySize];
 typedef char Value[kMaxValueSize];
 
 void Exit(const char* msg) {
-  perror(msg);
-  exit(EXIT_FAILURE);
-}
+  #ifdef _WIN32
+    fprintf(stderr, "%s: Error code %lu\n", msg, GetLastError());
+  #else
+    perror(msg);
+  #endif
+    exit(EXIT_FAILURE);
+  }
 
 struct BPlusTree::Meta {
   off_t offset;   // ofset of self
@@ -245,12 +253,17 @@ class BPlusTree::BlockCache {
   ~BlockCache() {
     for (auto it = offset2node_.begin(); it != offset2node_.end(); it++) {
       Node* node = it->second;
+#ifdef _WIN32
+      UnmapViewOfFile(node->block);
+      CloseHandle(node->hMapFile);
+#else
       off_t page_offset = node->offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
       char* start = reinterpret_cast<char*>(node->block);
       void* addr = static_cast<void*>(&start[page_offset - node->offset]);
       if (munmap(addr, node->size + node->offset - page_offset) != 0) {
         Exit("munmap");
       }
+#endif
       delete node;
     }
     delete head_;
@@ -300,20 +313,53 @@ class BPlusTree::BlockCache {
   template <typename T>
   T* Get(int fd, off_t offset) {
     if (offset2node_.find(offset) == offset2node_.end()) {
+      constexpr int size = sizeof(T);
+#ifdef _WIN32
+      HANDLE hFile = (HANDLE)_get_osfhandle(fd);
+      if (hFile == INVALID_HANDLE_VALUE) Exit("_get_osfhandle");
+
+      LARGE_INTEGER fileSize;
+      if (!GetFileSizeEx(hFile, &fileSize)) Exit("GetFileSizeEx");
+      if (fileSize.QuadPart < offset + size) {
+        LARGE_INTEGER newSize;
+        newSize.QuadPart = offset + size;
+        if (!SetFilePointerEx(hFile, newSize, NULL, FILE_BEGIN) || 
+            !SetEndOfFile(hFile)) {
+          Exit("SetFilePointerEx/SetEndOfFile");
+        }
+      }
+
+      HANDLE hMapFile = CreateFileMapping(
+          hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
+      if (hMapFile == NULL) Exit("CreateFileMapping");
+
+      void* mapAddr = MapViewOfFile(
+          hMapFile, FILE_MAP_ALL_ACCESS, 0, offset, size);
+      if (mapAddr == NULL) {
+        CloseHandle(hMapFile);
+        Exit("MapViewOfFile");
+      }
+
+      T* block = static_cast<T*>(mapAddr);
+      Node* node = new Node(block, offset, size);
+      node->hMapFile = hMapFile;
+#else
       struct stat st;
       if (fstat(fd, &st) != 0) Exit("fstat");
-      constexpr int size = sizeof(T);
       if (st.st_size < offset + size && ftruncate(fd, offset + size) != 0) {
         Exit("ftruncate");
       }
       // Align offset to page size.
-      // See http://man7.org/linux/man-pages/man2/mmap.2.html
       off_t page_offset = offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
       void* addr = mmap(nullptr, size + offset - page_offset,
                         PROT_READ | PROT_WRITE, MAP_SHARED, fd, page_offset);
       if (MAP_FAILED == addr) Exit("mmap");
       char* start = static_cast<char*>(addr);
-      return reinterpret_cast<T*>(&start[offset - page_offset]);
+      T* block = reinterpret_cast<T*>(&start[offset - page_offset]);
+      Node* node = new Node(block, offset, size);
+#endif
+      offset2node_.emplace(offset, node);
+      return block;
     }
 
     Node* node = offset2node_[offset];
@@ -329,12 +375,17 @@ class BPlusTree::BlockCache {
 
     assert(tail != head_);
 
+#ifdef _WIN32
+    UnmapViewOfFile(tail->block);
+    CloseHandle(tail->hMapFile);
+#else
     off_t page_offset = tail->offset & ~(sysconf(_SC_PAGE_SIZE) - 1);
     char* start = reinterpret_cast<char*>(tail->block);
     void* addr = static_cast<void*>(&start[page_offset - tail->offset]);
     if (munmap(addr, tail->size + tail->offset - page_offset) != 0) {
       Exit("munmap");
     }
+#endif
     offset2node_.erase(tail->offset);
     delete tail;
   }
@@ -347,6 +398,9 @@ class BPlusTree::BlockCache {
           ref(0),
           prev(nullptr),
           next(nullptr) {}
+#ifdef _WIN32
+          , hMapFile(NULL)
+#endif
 
     Node(void* block_, off_t offset_, size_t size_)
         : block(block_),
@@ -355,6 +409,9 @@ class BPlusTree::BlockCache {
           ref(1),
           prev(nullptr),
           next(nullptr) {}
+#ifdef _WIN32
+          , hMapFile(NULL)
+#endif
 
     void* block;
     off_t offset;
@@ -362,6 +419,9 @@ class BPlusTree::BlockCache {
     size_t ref;
     Node* prev;
     Node* next;
+#ifdef _WIN32
+    HANDLE hMapFile;
+#endif
   };
 
   Node* head_;
@@ -370,8 +430,14 @@ class BPlusTree::BlockCache {
 };
 
 BPlusTree::BPlusTree(const char* path)
-    : fd_(open(path, O_CREAT | O_RDWR, 0600)), block_cache_(new BlockCache()) {
+    : block_cache_(new BlockCache()) {
+#ifdef _WIN32
+  fd_ = _open(path, _O_CREAT | _O_RDWR | _O_BINARY, _S_IREAD | _S_IWRITE);
+#else
+  fd_ = open(path, O_CREAT | O_RDWR, 0600);
+#endif
   if (fd_ == -1) Exit("open");
+  
   meta_ = Map<Meta>(kMetaOffset);
   if (meta_->height == 0) {
     // Initialize B+tree;
@@ -388,7 +454,11 @@ BPlusTree::BPlusTree(const char* path)
 BPlusTree::~BPlusTree() {
   UnMap(meta_);
   delete block_cache_;
+#ifdef _WIN32
+  _close(fd_);
+#else
   close(fd_);
+#endif
 }
 
 void BPlusTree::Put(const std::string& key, const std::string& value) {
