@@ -19,14 +19,23 @@ file(GLOB_RECURSE BPTREE_SOURCE
     src/bptree/*.cc
 )
 
+file(GLOB_RECURSE TREE_BUILDER_SOURCE
+    src/tree_builder/*.cc
+)
+
 add_library(bptree SHARED
     ${BPTREE_SOURCE}
+)
+
+add_library(tree_builder SHARED
+    ${TREE_BUILDER_SOURCE}
 )
 
 add_executable(${PROJECT_NAME} src/main.cc)
 
 target_link_libraries(${PROJECT_NAME}
     bptree
+    tree_builder
     tree-sitter
     tree-sitter-python
     tree-sitter-go

@@ -7,16 +7,16 @@
 #include <bptree/bptree.hpp>
 
 int main(int argc, char *argv[]) {
-  BPlusTree tree("test.db");
-  tree.Put("1", "1");
-  tree.Put("2", "44");
-  tree.Put("3", "3");
-  tree.Dump();
+    BPlusTree tree("test.db");
+    tree.Put("1", "1");
+    tree.Put("2", "44");
+    tree.Put("3", "3");
+    tree.Dump();
 
-  // tree.Delete("2");
-  std::string value;
-  tree.Get("2", value);
-  std::cout << value << std::endl;
+    // tree.Delete("2");
+    std::string value;
+    tree.Get("2", value);
+    std::cout << value << std::endl;
 }
 
 
@@ -28,10 +28,10 @@ int main(int argc, char *argv[]) {
 // #include <tree_sitter/tree-sitter-go.h>
 
 // int main() {
-//   TSParser *parser = ts_parser_new();
-//   bool success = ts_parser_set_language(parser, tree_sitter_go());
-//   if (!success) {
-//       std::cout << "Failed to load language\n";
-//       return 1;
-//   }
+//     TSParser *parser = ts_parser_new();
+//     bool success = ts_parser_set_language(parser, tree_sitter_go());
+//     if (!success) {
+//         std::cout << "Failed to load language\n";
+//         return 1;
+//     }
 // }
