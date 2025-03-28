@@ -32,59 +32,59 @@ class BPlusTree {
     BPlusTree(const char* path);
     ~BPlusTree();
 
-    void Put(const std::string& key, const std::string& value);
-    bool Delete(const std::string& key);
-    bool Get(const std::string& key, std::string& value) const;
-    std::vector<std::pair<std::string, std::string>> GetRange(
+    void upsert(const std::string& key, const std::string& value);
+    bool remove(const std::string& key);
+    bool get(const std::string& key, std::string& value) const;
+    std::vector<std::pair<std::string, std::string>> get_range(
             const std::string& left_key, const std::string& right_key) const;
-    bool Empty() const;
-    size_t Size() const;
+    bool empty() const;
+    size_t size() const;
 
 #ifdef DEBUG
-    void Dump();
+    void dump();
 #endif
 
  private:
     template <typename T>
-    T* Map(off_t offset) const;
+    T* map(off_t offset) const;
     template <typename T>
-    void UnMap(T* map_obj) const;
+    void unmap(T* map_obj) const;
     template <typename T>
-    T* Alloc();
+    T* alloc();
     template <typename T>
-    void Dealloc(T* node);
+    void dealloc(T* node);
 
-    constexpr size_t GetMinKeys() const;
-    constexpr size_t GetMaxKeys() const;
+    constexpr size_t get_min_keys() const;
+    constexpr size_t get_max_keys() const;
 
     template <typename T>
-    int UpperBound(T arr[], int n, const char* target) const;
+    int upper_bound(T arr[], int n, const char* target) const;
     template <typename T>
-    int LowerBound(T arr[], int n, const char* target) const;
+    int lower_bound(T arr[], int n, const char* target) const;
 
-    off_t GetLeafOffset(const char* key) const;
-    LeafNode* SplitLeafNode(LeafNode* leaf_node);
-    IndexNode* SplitIndexNode(IndexNode* index_node);
-    size_t InsertKeyIntoIndexNode(IndexNode* index_node, const char* key,
-                                                                Node* left_node, Node* right_node);
-    size_t InsertKVIntoLeafNode(LeafNode* leaf_node, const char* key,
-                                                            const char* value);
-    int GetIndexFromLeafNode(LeafNode* leaf_node, const char* key) const;
-    IndexNode* GetOrCreateParent(Node* node);
+    off_t get_leaf_offset(const char* key) const;
+    LeafNode* split_leaf_node(LeafNode* leaf_node);
+    IndexNode* split_index_node(IndexNode* index_node);
+    size_t insert_key_into_index_node(IndexNode* index_node, const char* key,
+                                    Node* left_node, Node* right_node);
+    size_t insert_kv_into_leaf_node(LeafNode* leaf_node, const char* key,
+                                const char* value);
+    int get_index_from_leaf_node(LeafNode* leaf_node, const char* key) const;
+    IndexNode* get_or_create_parent(Node* node);
 
-    bool BorrowFromLeftLeafSibling(LeafNode* leaf_node);
-    bool BorrowFromRightLeafSibling(LeafNode* leaf_node);
-    bool BorrowFromLeafSibling(LeafNode* leaf_node);
-    bool MergeLeftLeaf(LeafNode* leaf_node);
-    bool MergeRightLeaf(LeafNode* leaf_node);
-    LeafNode* MergeLeaf(LeafNode* leaf_node);
+    bool borrow_from_left_leaf_sibling(LeafNode* leaf_node);
+    bool borrow_from_right_leaf_sibling(LeafNode* leaf_node);
+    bool borrow_from_leaf_sibling(LeafNode* leaf_node);
+    bool merge_left_leaf(LeafNode* leaf_node);
+    bool merge_right_leaf(LeafNode* leaf_node);
+    LeafNode* merge_leaf(LeafNode* leaf_node);
 
-    bool BorrowFromLeftIndexSibling(IndexNode* index_node);
-    bool BorrowFromRightIndexSibling(IndexNode* index_node);
-    bool BorrowFromIndexSibling(IndexNode* index_node);
-    bool MergeLeftIndex(IndexNode* index_node);
-    bool MergeRightIndex(IndexNode* index_node);
-    IndexNode* MergeIndex(IndexNode* index_node);
+    bool borrow_from_left_index_sibling(IndexNode* index_node);
+    bool borrow_from_right_index_sibling(IndexNode* index_node);
+    bool borrow_from_index_sibling(IndexNode* index_node);
+    bool merge_left_index(IndexNode* index_node);
+    bool merge_right_index(IndexNode* index_node);
+    IndexNode* merge_index(IndexNode* index_node);
 
     int fd_;
     BlockCache* block_cache_;

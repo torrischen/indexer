@@ -31,6 +31,16 @@ add_library(tree_builder SHARED
     ${TREE_BUILDER_SOURCE}
 )
 
+target_link_libraries(tree_builder
+    tree-sitter
+    tree-sitter-python
+    tree-sitter-go
+    tree-sitter-javascript
+    tree-sitter-typescript
+    tree-sitter-tsx
+    tree-sitter-java
+)
+
 add_executable(${PROJECT_NAME} src/main.cc)
 
 target_link_libraries(${PROJECT_NAME}
