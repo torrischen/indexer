@@ -25,13 +25,13 @@ typedef char Key[kMaxKeySize];
 typedef char Value[kMaxValueSize];
 
 void Exit(const char* msg) {
-  #ifdef _WIN32
-    fprintf(stderr, "%s: Error code %lu\n", msg, GetLastError());
-  #else
-    perror(msg);
-  #endif
-    exit(EXIT_FAILURE);
-  }
+#ifdef _WIN32
+  fprintf(stderr, "%s: Error code %lu\n", msg, GetLastError());
+#else
+  perror(msg);
+#endif
+  exit(EXIT_FAILURE);
+}
 
 struct BPlusTree::Meta {
   off_t offset;   // ofset of self
