@@ -11,19 +11,19 @@ TreeBuilder::TreeBuilder(const Language lang) {
     const TSLanguage *_language;
 
     switch (lang) {
-        case (GOLANG):
+        case (TREE_BUILDER_LANGUAGE_GOLANG):
             _language = tree_sitter_go();
             break;
-        case (JAVA):
+        case (TREE_BUILDER_LANGUAGE_JAVA):
             _language = tree_sitter_java();
             break;
-        case (PYTHON):
+        case (TREE_BUILDER_LANGUAGE_PYTHON):
             _language = tree_sitter_python();
             break;
-        case (JAVASCRIPT):
+        case (TREE_BUILDER_LANGUAGE_JAVASCRIPT):
             _language = tree_sitter_javascript();
             break;
-        case (TYPESCRIPT):
+        case (TREE_BUILDER_LANGUAGE_TYPESCRIPT):
             _language = tree_sitter_typescript();
             break;
         default:
@@ -39,7 +39,10 @@ TreeBuilder::TreeBuilder(const Language lang) {
     parser = _parser;
 }
 
-TreeBuilder::~TreeBuilder() {}
+TreeBuilder::~TreeBuilder() {
+    ts_parser_delete(parser);
+    ts_language_delete(language);
+}
 
 FilePayload TreeBuilder::load_file_to_payload(FILE *file) {
     FilePayload payload = {
@@ -53,11 +56,29 @@ FilePayload TreeBuilder::load_file_to_payload(FILE *file) {
 
 TSInput TreeBuilder::construct_parser_input(FilePayload *payload) {
     TSInput input = {
-        .payload = &payload,
+        .payload = payload,
         .read = file_read_helper,
         .encoding = TSInputEncodingUTF8,
         .decode = NULL
     };
-
     return input;
+}
+
+TSTree *TreeBuilder::build_tree(TSInput input) {
+    return ts_parser_parse(parser, NULL, input);
+}
+
+void TreeBuilder::delete_tree(TSTree *tree) {
+    ts_tree_delete(tree);
+}
+
+TSNode TreeBuilder::get_root_node(TSTree *tree) {
+    return ts_tree_root_node(tree);
+}
+
+void TreeBuilder::print(TSTree *tree) {
+    TSNode node = get_root_node(tree);
+    char *tree_string = ts_node_string(node);
+    puts(tree_string);
+    free(tree_string);
 }

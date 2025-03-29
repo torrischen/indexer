@@ -17,11 +17,11 @@
 #endif
 
 enum Language {
-    GOLANG,
-    JAVA,
-    PYTHON,
-    JAVASCRIPT,
-    TYPESCRIPT
+    TREE_BUILDER_LANGUAGE_GOLANG,
+    TREE_BUILDER_LANGUAGE_JAVA,
+    TREE_BUILDER_LANGUAGE_PYTHON,
+    TREE_BUILDER_LANGUAGE_JAVASCRIPT,
+    TREE_BUILDER_LANGUAGE_TYPESCRIPT
 };
 
 typedef struct {
@@ -49,11 +49,6 @@ public:
     TreeBuilder(const Language lang);
     ~TreeBuilder();
 
-private:
-    // private fields
-    TSParser *parser;
-    const TSLanguage *language;
-
     FILE* open_file(const char* path) {
         // Use platform-specific file opening with wide chars on Windows for UTF-8 support
 #ifdef _WIN32
@@ -72,9 +67,19 @@ private:
         }
         return file;
     }
-
+    
     FilePayload load_file_to_payload(FILE* file);
     TSInput construct_parser_input(FilePayload* payload);
+    TSTree *build_tree(TSInput input);
+    void delete_tree(TSTree *tree);
+    TSNode get_root_node(TSTree *tree);
+
+    void print(TSTree *tree);
+
+private:
+    // private fields
+    TSParser *parser;
+    const TSLanguage *language;
 };
 
 #endif // TREE_BUILDER_H
