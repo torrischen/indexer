@@ -4,7 +4,7 @@
 #include <tree_sitter/tree-sitter-java.h>
 #include <tree_sitter/tree-sitter-python.h>
 #include <tree_sitter/tree-sitter-javascript.h>
-#include <tree_sitter/tree-sitter-typescript.h>
+#include <tree_sitter/tree-sitter-tsx.h>
 
 TreeBuilder::TreeBuilder(const Language lang) {
     TSParser *_parser = ts_parser_new();
@@ -24,7 +24,7 @@ TreeBuilder::TreeBuilder(const Language lang) {
             _language = tree_sitter_javascript();
             break;
         case (TREE_BUILDER_LANGUAGE_TYPESCRIPT):
-            _language = tree_sitter_typescript();
+            _language = tree_sitter_tsx();
             break;
         default:
             _language = tree_sitter_java();

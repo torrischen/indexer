@@ -26,8 +26,8 @@
 #include <tree_builder/tree_builder.hpp>
 
 int main() {
-    TreeBuilder builder = TreeBuilder(TREE_BUILDER_LANGUAGE_GOLANG);
-    FILE *file = builder.open_file("./source.go");
+    TreeBuilder builder = TreeBuilder(TREE_BUILDER_LANGUAGE_TYPESCRIPT);
+    FILE *file = builder.open_file("./source.ts");
     FilePayload payload = builder.load_file_to_payload(file);
     TSInput input = builder.construct_parser_input(&payload);
     TSTree *tree = builder.build_tree(input);
