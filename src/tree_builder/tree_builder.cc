@@ -82,3 +82,25 @@ void TreeBuilder::print(TSTree *tree) {
     puts(tree_string);
     free(tree_string);
 }
+
+std::vector<TSPoint> TreeBuilder::query(TSTree *tree, const std::string &query_str) {
+    uint32_t error_offset = 0;
+    TSQueryError error_type = TSQueryErrorNone;
+    TSQuery *query = ts_query_new(tree_sitter_tsx(), query_str.c_str(),
+                                    strlen(query_str.c_str()), &error_offset, &error_type);
+    if (error_type != TSQueryErrorNone) {
+        throw std::runtime_error("fail to create new query");
+    }
+    TSQueryCursor *cursor = ts_query_cursor_new();
+    ts_query_cursor_exec(cursor, query, ts_tree_root_node(tree));
+
+    TSQueryMatch match;
+    uint32_t index;
+    std::vector<TSPoint> result;
+    while (ts_query_cursor_next_capture(cursor, &match, &index)) {
+        TSPoint point = ts_node_start_point(match.captures->node);
+        result.push_back(point);
+    }
+
+    return result;
+}

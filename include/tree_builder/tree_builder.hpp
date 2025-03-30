@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string.h>
 #include <tree_sitter/api.h>
-
+#include <vector>
 #include <cstdio>
 #include <string>
 
@@ -73,6 +73,7 @@ public:
     TSTree *build_tree(TSInput input);
     void delete_tree(TSTree *tree);
     TSNode get_root_node(TSTree *tree);
+    std::vector<TSPoint> query(TSTree *tree, const std::string &query_str); 
 
     void print(TSTree *tree);
 

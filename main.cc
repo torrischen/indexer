@@ -47,10 +47,14 @@ int main() {
     builder.print(tree);
 
     std::string src = R"((interface_declaration) @iface.dec)";
-    uint32_t error_offset = 0;
-    TSQueryError error_type = TSQueryErrorNone;
-    TSQuery *query = ts_query_new(tree_sitter_tsx(), src.c_str(), strlen(src.c_str()), &error_offset, &error_type);
-    TSQueryCursor *cursor = ts_query_cursor_new();
-    ts_query_cursor_exec(cursor, query, ts_tree_root_node(tree));
-    print_captures(cursor);
+    std::vector<TSPoint> result = builder.query(tree, src);
+
+    std::cout << result[0].column << std::endl;
+
+    // uint32_t error_offset = 0;
+    // TSQueryError error_type = TSQueryErrorNone;
+    // TSQuery *query = ts_query_new(tree_sitter_tsx(), src.c_str(), strlen(src.c_str()), &error_offset, &error_type);
+    // TSQueryCursor *cursor = ts_query_cursor_new();
+    // ts_query_cursor_exec(cursor, query, ts_tree_root_node(tree));
+    // print_captures(cursor);
 }
