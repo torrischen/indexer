@@ -23,6 +23,10 @@ file(GLOB_RECURSE TREE_BUILDER_SOURCE
     src/tree_builder/*.cc
 )
 
+# file(GLOB_RECURSE INDEXER_SOURCE
+#     src/*.cc
+# )
+
 add_library(bptree SHARED
     ${BPTREE_SOURCE}
 )
@@ -30,6 +34,10 @@ add_library(bptree SHARED
 add_library(tree_builder SHARED
     ${TREE_BUILDER_SOURCE}
 )
+
+# add_library(indexer SHARED
+#     ${INDEXER_SOURCE}
+# )
 
 target_link_libraries(tree_builder
     tree-sitter
@@ -41,7 +49,7 @@ target_link_libraries(tree_builder
     tree-sitter-java
 )
 
-add_executable(${PROJECT_NAME} src/main.cc)
+add_executable(${PROJECT_NAME} main.cc)
 
 target_link_libraries(${PROJECT_NAME}
     bptree
